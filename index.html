@@ -413,6 +413,32 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Temp buttons */
+  .temp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .temp-btn {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .temp-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .temp-btn[data-val="Froid"].active    { border-color: #95a5a6; color: #95a5a6; background: rgba(149,165,166,0.1); }
+  .temp-btn[data-val="Chaud/Froid"].active { border-color: #f39c12; color: #f39c12; background: rgba(243,156,18,0.1); }
+  .temp-btn[data-val="Chaud"].active    { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.1); }
+
   /* Hidden inputs for button groups */
   .hidden-input { display: none; }
 
@@ -474,7 +500,7 @@
     <div>
       <div class="section-label">La spéciale</div>
       <div class="card">
-        <div class="grid-3">
+        <div class="grid-2" style="margin-bottom:14px;">
           <div class="field">
             <label>Longueur (km)</label>
             <input type="number" id="longueur" name="longueur" step="0.01" min="0" placeholder="ex: 12.40" required>
@@ -483,20 +509,32 @@
             <label>Météo</label>
             <select id="meteo" name="meteo" required>
               <option value="" disabled selected>— Choisir —</option>
-              <option>Sec</option>
-              <option>Nuageux</option>
-              <option>Humide</option>
-              <option>Pluie</option>
-              <option>Forte pluie</option>
+              <option>Averses</option>
+              <option>Brouillard</option>
+              <option>Couvert</option>
               <option>Neige</option>
-              <option>Verglas</option>
-              <option>Mixte</option>
+              <option>Nuageux</option>
+              <option>Orage</option>
+              <option>Peu nuageux</option>
+              <option>Pluie</option>
+              <option>Pluie Éparse</option>
+              <option>Soleil</option>
+              <option>Tempête</option>
+              <option>Très nuageux</option>
             </select>
           </div>
-          <div class="field">
-            <label>Température (°C)</label>
-            <input type="number" id="temperature" name="temperature" placeholder="ex: 18" required>
+        </div>
+        <div class="field">
+            <label>Température du revêtement</label>
+            <div class="temp-grid" id="tempGrid">
+              <button type="button" class="temp-btn" data-val="Froid">❄️ Froid</button>
+              <button type="button" class="temp-btn" data-val="Chaud/Froid">🌡 Chaud/Froid</button>
+              <button type="button" class="temp-btn" data-val="Chaud">🔥 Chaud</button>
+            </div>
+            <input type="hidden" id="temperature" name="temperature" required>
           </div>
+      </div>
+    </div>
         </div>
       </div>
     </div>
@@ -524,12 +562,8 @@
           </div>
         </div>
         <div class="field" style="margin-top:14px;">
-          <label>Confiance (<span id="confianceVal">50</span>/100)</label>
-          <div class="slider-wrap">
-            <input type="range" id="confiance" name="confiance" min="0" max="100" value="50"
-              oninput="document.getElementById('confianceVal').textContent=this.value">
-            <span class="slider-val" id="confianceVal2">50</span>
-          </div>
+          <label>Confiance (0–100)</label>
+          <input type="number" id="confiance" name="confiance" min="0" max="100" placeholder="ex: 72" required>
         </div>
       </div>
     </div>
@@ -538,20 +572,14 @@
     <div>
       <div class="section-label">État de la voiture</div>
       <div class="card">
-        <div class="field" style="margin-bottom:14px;">
-          <label>Usure voiture (<span id="usureVoitureVal">0</span>%)</label>
-          <div class="slider-wrap">
-            <input type="range" id="usureVoiture" name="usureVoiture" min="0" max="100" value="0"
-              oninput="document.getElementById('usureVoitureVal').textContent=this.value">
-            <span class="slider-val" id="usureVoitureVal2">0</span>
+        <div class="grid-2">
+          <div class="field">
+            <label>Usure voiture (%)</label>
+            <input type="number" id="usureVoiture" name="usureVoiture" min="0" max="100" placeholder="ex: 23" required>
           </div>
-        </div>
-        <div class="field">
-          <label>Usure pneu (<span id="usurePneuVal">0</span>%)</label>
-          <div class="slider-wrap">
-            <input type="range" id="usurePneu" name="usurePneu" min="0" max="100" value="0"
-              oninput="document.getElementById('usurePneuVal').textContent=this.value">
-            <span class="slider-val" id="usurePneuVal2">0</span>
+          <div class="field">
+            <label>Usure pneu (%)</label>
+            <input type="number" id="usurePneu" name="usurePneu" min="0" max="100" placeholder="ex: 45" required>
           </div>
         </div>
       </div>
@@ -653,14 +681,12 @@ document.querySelectorAll('#surfaceGrid .surface-btn').forEach(btn => {
   });
 });
 
-// ─── SLIDERS (sync display) ────────────────────────────────
-['confiance', 'usureVoiture', 'usurePneu'].forEach(id => {
-  const el = document.getElementById(id);
-  const v1 = document.getElementById(id + 'Val');
-  const v2 = document.getElementById(id + 'Val2');
-  el.addEventListener('input', () => {
-    if (v1) v1.textContent = el.value;
-    if (v2) v2.textContent = el.value;
+// ─── TEMP BUTTONS ──────────────────────────────────────────
+document.querySelectorAll('#tempGrid .temp-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#tempGrid .temp-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('temperature').value = btn.dataset.val;
   });
 });
 
@@ -764,15 +790,12 @@ function resetForm() {
   document.getElementById('xpTerre').value = '';
   document.getElementById('xpVoiture').value = '';
   document.getElementById('niveau').value = '';
-  document.getElementById('confiance').value = 50;
-  document.getElementById('confianceVal').textContent = 50;
-  document.getElementById('confianceVal2').textContent = 50;
-  document.getElementById('usureVoiture').value = 0;
-  document.getElementById('usureVoitureVal').textContent = 0;
-  document.getElementById('usureVoitureVal2').textContent = 0;
-  document.getElementById('usurePneu').value = 0;
-  document.getElementById('usurePneuVal').textContent = 0;
-  document.getElementById('usurePneuVal2').textContent = 0;
+  document.getElementById('confiance').value = '';
+  document.getElementById('usureVoiture').value = '';
+  document.getElementById('usurePneu').value = '';
+  // Reset temp buttons
+  document.querySelectorAll('#tempGrid .temp-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('temperature').value = '';
   document.getElementById('typeEvenement').value = '';
   document.getElementById('tempsPerdu').value = '';
 }
