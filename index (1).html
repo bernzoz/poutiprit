@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rallye-Game — Tracker de Spéciales</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e63329;
+    --red-dark: #b01f16;
+    --red-glow: rgba(230,51,41,0.18);
+    --dark: #0d0d0d;
+    --dark2: #141414;
+    --dark3: #1c1c1c;
+    --dark4: #242424;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0ece6;
+    --text-muted: #7a7570;
+    --green: #2ecc71;
+    --yellow: #f39c12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Racing stripes background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 60px,
+        rgba(230,51,41,0.025) 60px,
+        rgba(230,51,41,0.025) 61px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    background: var(--red);
+    clip-path: polygon(0 0, 80% 0, 100% 50%, 80% 100%, 0 100%, 20% 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    color: white;
+    text-indent: 6px;
+  }
+
+  .header-text h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .header-text p {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 4px 10px;
+    opacity: 0.8;
+  }
+
+  /* FORM */
+  form { display: flex; flex-direction: column; gap: 20px; }
+
+  .section-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--red);
+    opacity: 0.25;
+  }
+
+  .card {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  input[type="number"],
+  input[type="text"],
+  select,
+  textarea {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input[type="number"]:focus,
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px var(--red-glow);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e63329' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  select option { background: var(--dark3); }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+
+  /* Attack buttons */
+  .attack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .attack-btn {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .attack-btn:hover { border-color: var(--red); color: var(--text); }
+  .attack-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+
+  /* Event toggle */
+  .event-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 10px;
+    background: var(--dark3);
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .toggle-btn.active-yes {
+    background: var(--green);
+    color: white;
+  }
+  .toggle-btn.active-no {
+    background: var(--dark4);
+    color: var(--text);
+  }
+
+  /* Event details panel */
+  .event-details {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    flex-direction: column;
+    gap: 12px;
+  }
+  .event-details.visible { display: flex; }
+
+  /* Surface selector */
+  .surface-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .surface-btn {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .surface-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .surface-btn.active {
+    border-color: rgba(255,255,255,0.4);
+    color: var(--text);
+    background: var(--dark4);
+  }
+  .surface-btn[data-val="asphalte"].active { border-color: #3498db; box-shadow: 0 0 10px rgba(52,152,219,0.2); }
+  .surface-btn[data-val="terre"].active    { border-color: #e67e22; box-shadow: 0 0 10px rgba(230,126,34,0.2); }
+  .surface-btn[data-val="neige"].active    { border-color: #95a5a6; box-shadow: 0 0 10px rgba(149,165,166,0.2); }
+
+  /* Slider */
+  .slider-wrap { display: flex; align-items: center; gap: 12px; }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--dark4);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+  }
+  input[type="range"]:focus { border-color: transparent; box-shadow: none; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    background: var(--red);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--red-glow);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    background: var(--red);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+  .slider-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* Submit */
+  .submit-area { margin-top: 8px; }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--red);
+    border: none;
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+  }
+  .btn-submit:hover { background: var(--red-dark); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--dark2);
+    border: 1px solid var(--green);
+    color: var(--text);
+    padding: 14px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.error { border-color: var(--red); }
+
+  /* Config banner */
+  #config-banner {
+    background: var(--dark2);
+    border: 1px solid var(--yellow);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--yellow);
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #config-banner a { color: var(--yellow); text-decoration: underline; cursor: pointer; }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Hidden inputs for button groups */
+  .hidden-input { display: none; }
+
+  @media (max-width: 520px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .attack-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-mark">RG</div>
+    <div class="header-text">
+      <h1>Rallye-Game</h1>
+      <p>Tracker de spéciales</p>
+    </div>
+    <div class="header-badge">Data Tracker</div>
+  </header>
+
+  <div id="config-banner">
+    ⚠ &nbsp;
+    <span>SCRIPT_URL non configuré — <a onclick="document.getElementById('config-modal').style.display='flex'">Configurer la connexion Google Sheets</a></span>
+  </div>
+
+  <form id="trackerForm" onsubmit="return false;">
+
+    <!-- STRATÉGIE -->
+    <div>
+      <div class="section-label">Stratégie d'attaque</div>
+      <div class="card">
+        <div class="attack-grid" id="attackGrid">
+          <button type="button" class="attack-btn" data-val="Très Grosse Attaque">Très Grosse</button>
+          <button type="button" class="attack-btn" data-val="Grosse Attaque">Grosse</button>
+          <button type="button" class="attack-btn" data-val="Attaque Poussée">Poussée</button>
+          <button type="button" class="attack-btn" data-val="Attaque Normale">Normale</button>
+          <button type="button" class="attack-btn" data-val="Calme">Calme</button>
+          <button type="button" class="attack-btn" data-val="Ramener l'auto">Ramener l'auto</button>
+        </div>
+        <input type="hidden" id="attaque" name="attaque" class="hidden-input" required>
+      </div>
+    </div>
+
+    <!-- SURFACE -->
+    <div>
+      <div class="section-label">Surface</div>
+      <div class="card">
+        <div class="surface-grid" id="surfaceGrid">
+          <button type="button" class="surface-btn" data-val="asphalte">🏎 Asphalte</button>
+          <button type="button" class="surface-btn" data-val="terre">🟤 Terre</button>
+          <button type="button" class="surface-btn" data-val="neige">❄️ Neige</button>
+        </div>
+        <input type="hidden" id="surface" name="surface" class="hidden-input" required>
+      </div>
+    </div>
+
+    <!-- SPÉCIALE -->
+    <div>
+      <div class="section-label">La spéciale</div>
+      <div class="card">
+        <div class="grid-3">
+          <div class="field">
+            <label>Longueur (km)</label>
+            <input type="number" id="longueur" name="longueur" step="0.01" min="0" placeholder="ex: 12.40" required>
+          </div>
+          <div class="field">
+            <label>Météo</label>
+            <select id="meteo" name="meteo" required>
+              <option value="" disabled selected>— Choisir —</option>
+              <option>Sec</option>
+              <option>Nuageux</option>
+              <option>Humide</option>
+              <option>Pluie</option>
+              <option>Forte pluie</option>
+              <option>Neige</option>
+              <option>Verglas</option>
+              <option>Mixte</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Température (°C)</label>
+            <input type="number" id="temperature" name="temperature" placeholder="ex: 18" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XP & NIVEAU -->
+    <div>
+      <div class="section-label">Expérience & Niveau</div>
+      <div class="card">
+        <div class="grid-2">
+          <div class="field">
+            <label>XP Asphalte</label>
+            <input type="number" id="xpAsphalte" name="xpAsphalte" min="0" placeholder="0" required>
+          </div>
+          <div class="field">
+            <label>XP Terre / Neige</label>
+            <input type="number" id="xpTerre" name="xpTerre" min="0" placeholder="0" required>
+          </div>
+          <div class="field">
+            <label>XP Voiture</label>
+            <input type="number" id="xpVoiture" name="xpVoiture" min="0" placeholder="0" required>
+          </div>
+          <div class="field">
+            <label>Niveau du pilote</label>
+            <input type="number" id="niveau" name="niveau" min="0" placeholder="0" required>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Confiance (<span id="confianceVal">50</span>/100)</label>
+          <div class="slider-wrap">
+            <input type="range" id="confiance" name="confiance" min="0" max="100" value="50"
+              oninput="document.getElementById('confianceVal').textContent=this.value">
+            <span class="slider-val" id="confianceVal2">50</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USURE -->
+    <div>
+      <div class="section-label">État de la voiture</div>
+      <div class="card">
+        <div class="field" style="margin-bottom:14px;">
+          <label>Usure voiture (<span id="usureVoitureVal">0</span>%)</label>
+          <div class="slider-wrap">
+            <input type="range" id="usureVoiture" name="usureVoiture" min="0" max="100" value="0"
+              oninput="document.getElementById('usureVoitureVal').textContent=this.value">
+            <span class="slider-val" id="usureVoitureVal2">0</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Usure pneu (<span id="usurePneuVal">0</span>%)</label>
+          <div class="slider-wrap">
+            <input type="range" id="usurePneu" name="usurePneu" min="0" max="100" value="0"
+              oninput="document.getElementById('usurePneuVal').textContent=this.value">
+            <span class="slider-val" id="usurePneuVal2">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉVÉNEMENT -->
+    <div>
+      <div class="section-label">Résultat de la spéciale</div>
+      <div class="card">
+        <div class="field" style="margin-bottom: 12px;">
+          <label>Événement ?</label>
+          <div class="event-toggle">
+            <button type="button" class="toggle-btn" id="btnNon" onclick="setEvent(false)">✕ &nbsp;NON</button>
+            <button type="button" class="toggle-btn" id="btnOui" onclick="setEvent(true)">✓ &nbsp;OUI</button>
+          </div>
+          <input type="hidden" id="evenement" name="evenement" value="">
+        </div>
+
+        <div class="event-details" id="eventDetails">
+          <div class="field">
+            <label>Type d'événement</label>
+            <textarea id="typeEvenement" name="typeEvenement" placeholder="Copiez le texte de l'événement ici..."></textarea>
+          </div>
+          <div class="field">
+            <label>Temps perdu (secondes)</label>
+            <input type="number" id="tempsPerdu" name="tempsPerdu" min="0" placeholder="ex: 45">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-area">
+      <button class="btn-submit" id="submitBtn" onclick="submitForm()">
+        Enregistrer la spéciale
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<!-- Config Modal -->
+<div id="config-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--dark2);border:1px solid var(--border);padding:28px;max-width:500px;width:90%;">
+    <h2 style="font-family:'Rajdhani',sans-serif;font-size:18px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;color:var(--red);">Configuration Google Sheets</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">Collez l'URL du script Google Apps ci-dessous (voir README pour l'obtenir) :</p>
+    <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/..." style="width:100%;margin-bottom:14px;">
+    <div style="display:flex;gap:10px;">
+      <button onclick="saveConfig()" style="flex:1;background:var(--red);border:none;color:white;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:12px;cursor:pointer;">Sauvegarder</button>
+      <button onclick="document.getElementById('config-modal').style.display='none'" style="flex:1;background:var(--dark4);border:1px solid var(--border);color:var(--text-muted);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:12px;cursor:pointer;">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+// L'URL du script Google Apps est stockée en localStorage
+let SCRIPT_URL = localStorage.getItem('rg_script_url') || '';
+
+function updateBanner() {
+  const banner = document.getElementById('config-banner');
+  if (SCRIPT_URL) {
+    banner.style.borderColor = '#2ecc71';
+    banner.style.color = '#2ecc71';
+    banner.innerHTML = '✓ &nbsp;Connecté à Google Sheets — <a onclick="document.getElementById(\'config-modal\').style.display=\'flex\'">Modifier</a>';
+  }
+}
+updateBanner();
+
+function saveConfig() {
+  const val = document.getElementById('scriptUrlInput').value.trim();
+  if (!val.startsWith('https://script.google.com')) {
+    showToast('URL invalide', true); return;
+  }
+  SCRIPT_URL = val;
+  localStorage.setItem('rg_script_url', val);
+  document.getElementById('config-modal').style.display = 'none';
+  updateBanner();
+  showToast('Configuration sauvegardée ✓');
+}
+
+// ─── ATTACK BUTTONS ────────────────────────────────────────
+document.querySelectorAll('#attackGrid .attack-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#attackGrid .attack-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('attaque').value = btn.dataset.val;
+  });
+});
+
+// ─── SURFACE BUTTONS ───────────────────────────────────────
+document.querySelectorAll('#surfaceGrid .surface-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#surfaceGrid .surface-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('surface').value = btn.dataset.val;
+  });
+});
+
+// ─── SLIDERS (sync display) ────────────────────────────────
+['confiance', 'usureVoiture', 'usurePneu'].forEach(id => {
+  const el = document.getElementById(id);
+  const v1 = document.getElementById(id + 'Val');
+  const v2 = document.getElementById(id + 'Val2');
+  el.addEventListener('input', () => {
+    if (v1) v1.textContent = el.value;
+    if (v2) v2.textContent = el.value;
+  });
+});
+
+// ─── EVENT TOGGLE ──────────────────────────────────────────
+let eventValue = null;
+
+function setEvent(val) {
+  eventValue = val;
+  document.getElementById('evenement').value = val ? 'Oui' : 'Non';
+  document.getElementById('btnOui').className = 'toggle-btn' + (val ? ' active-yes' : '');
+  document.getElementById('btnNon').className = 'toggle-btn' + (!val ? ' active-no' : '');
+  document.getElementById('eventDetails').className = 'event-details' + (val ? ' visible' : '');
+  if (!val) {
+    document.getElementById('typeEvenement').value = '';
+    document.getElementById('tempsPerdu').value = '';
+  }
+}
+
+// ─── SUBMIT ────────────────────────────────────────────────
+async function submitForm() {
+  // Validation
+  const attaque = document.getElementById('attaque').value;
+  const surface = document.getElementById('surface').value;
+  if (!attaque) { showToast('Sélectionnez une stratégie d\'attaque', true); return; }
+  if (!surface) { showToast('Sélectionnez une surface', true); return; }
+  if (eventValue === null) { showToast('Indiquez si un événement s\'est produit', true); return; }
+
+  const longueur = document.getElementById('longueur').value;
+  const meteo = document.getElementById('meteo').value;
+  const temperature = document.getElementById('temperature').value;
+  if (!longueur || !meteo || !temperature) { showToast('Complétez tous les champs de la spéciale', true); return; }
+
+  const xpA = document.getElementById('xpAsphalte').value;
+  const xpT = document.getElementById('xpTerre').value;
+  const xpV = document.getElementById('xpVoiture').value;
+  const niv = document.getElementById('niveau').value;
+  if (xpA === '' || xpT === '' || xpV === '' || niv === '') { showToast('Complétez l\'expérience & niveau', true); return; }
+
+  if (!SCRIPT_URL) { showToast('Configurez d\'abord l\'URL du script Google Sheets', true); return; }
+
+  const now = new Date();
+  const timestamp = now.toLocaleString('fr-FR');
+
+  const data = {
+    timestamp,
+    attaque,
+    xpAsphalte: xpA,
+    xpTerre: xpT,
+    xpVoiture: xpV,
+    confiance: document.getElementById('confiance').value,
+    usureVoiture: document.getElementById('usureVoiture').value,
+    usurePneu: document.getElementById('usurePneu').value,
+    niveau: niv,
+    surface,
+    longueur,
+    meteo,
+    temperature,
+    evenement: document.getElementById('evenement').value,
+    typeEvenement: document.getElementById('typeEvenement').value || '',
+    tempsPerdu: document.getElementById('tempsPerdu').value || '',
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi en cours...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    showToast('Spéciale enregistrée ✓');
+    resetForm();
+  } catch (e) {
+    showToast('Erreur d\'envoi — vérifiez l\'URL', true);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Enregistrer la spéciale';
+}
+
+function resetForm() {
+  // Reset button groups
+  document.querySelectorAll('#attackGrid .attack-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#surfaceGrid .surface-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('attaque').value = '';
+  document.getElementById('surface').value = '';
+  // Reset event
+  eventValue = null;
+  document.getElementById('evenement').value = '';
+  document.getElementById('btnOui').className = 'toggle-btn';
+  document.getElementById('btnNon').className = 'toggle-btn';
+  document.getElementById('eventDetails').className = 'event-details';
+  // Reset form fields
+  document.getElementById('longueur').value = '';
+  document.getElementById('meteo').value = '';
+  document.getElementById('temperature').value = '';
+  document.getElementById('xpAsphalte').value = '';
+  document.getElementById('xpTerre').value = '';
+  document.getElementById('xpVoiture').value = '';
+  document.getElementById('niveau').value = '';
+  document.getElementById('confiance').value = 50;
+  document.getElementById('confianceVal').textContent = 50;
+  document.getElementById('confianceVal2').textContent = 50;
+  document.getElementById('usureVoiture').value = 0;
+  document.getElementById('usureVoitureVal').textContent = 0;
+  document.getElementById('usureVoitureVal2').textContent = 0;
+  document.getElementById('usurePneu').value = 0;
+  document.getElementById('usurePneuVal').textContent = 0;
+  document.getElementById('usurePneuVal2').textContent = 0;
+  document.getElementById('typeEvenement').value = '';
+  document.getElementById('tempsPerdu').value = '';
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+// Pre-fill scriptUrl input if already saved
+if (SCRIPT_URL) document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+</script>
+</body>
+</html>
